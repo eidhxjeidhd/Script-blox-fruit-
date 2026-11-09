@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blox Fruit Script Hub</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f111a;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        /* Hiệu ứng chữ 7 màu chạy (Rainbow Gradient) */
+        @keyframes rainbow {
+            0% { color: #ff0000; }
+            14% { color: #ff7f00; }
+            28% { color: #ffff00; }
+            42% { color: #00ff00; }
+            57% { color: #0000ff; }
+            71% { color: #4b0082; }
+            85% { color: #8b00ff; }
+            100% { color: #ff0000; }
+        }
+
+        @keyframes borderRainbow {
+            0% { border-color: #ff0000; }
+            14% { border-color: #ff7f00; }
+            28% { border-color: #ffff00; }
+            42% { border-color: #00ff00; }
+            57% { border-color: #0000ff; }
+            71% { border-color: #4b0082; }
+            85% { border-color: #8b00ff; }
+            100% { border-color: #ff0000; }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            animation: rainbow 5s infinite;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #8f9bb3;
+            font-size: 14px;
+        }
+
+        /* Form đóng góp script */
+        .form-container {
+            background: #181b28;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 2px solid #333;
+            animation: borderRainbow 8s infinite;
+        }
+
+        .form-container h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            animation: rainbow 5s infinite;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: #0f111a;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            height: 70px;
+            font-family: monospace;
+        }
+
+        .btn-submit {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #0056b3;
+        }
+
+        /* Khung chứa các thẻ Script (Card giống ảnh) */
+        .script-card {
+            background: #181b28;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #2d3748;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .script-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .script-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .lua-label {
+            font-size: 12px;
+            color: #a0aec0;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-copy {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-copy:active {
+            background-color: #28a745;
+        }
+
+        .code-box {
+            background: #0f111a;
+            border: 1px solid #222;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #d1d5db;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Blox Fruit Script Hub</h1>
+        <p>Kho lưu trữ script miễn phí - Cộng đồng tự do chia sẻ</p>
+    </header>
+
+    <!-- Form cho mọi người đóng góp script -->
+    <div class="form-container">
+        <h3>+ Đóng Góp Script Mới</h3>
+        <div class="form-group" style="margin-top: 10px;">
+            <input type="text" id="scriptName" placeholder="Tên script (VD: Raito Hub - Auto Farm)...">
+        </div>
+        <div class="form-group">
+            <textarea id="scriptCode" placeholder="Dán mã LUA vào đây (loadstring(...))..."></textarea>
+        </div>
+        <button class="btn-submit" onclick="addNewScript()">Đăng Script Ngay</button>
+    </div>
+
+    <!-- Danh sách hiển thị các script -->
+    <div id="scriptList">
+        <!-- Script mẫu số 1 -->
+        <div class="script-card">
+            <div class="script-title">❄️ Speed Hub X Blox Fruit – Keyless, ESP, Speed Hack</div>
+            <div class="script-header-row">
+                <span class="lua-label">LUA CODE:</span>
+                <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+            </div>
+            <div class="code-box">loadstring(game:HttpGet("https://raw.githubusercontent.com/ahmadhalabi2/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()</div>
+        </div>
+
+        <!-- Script mẫu số 2 -->
+        <div class="script-card">
+            <div class="script-title">❄️ Raito Hub Blox Fruit - Auto Chest, Sea Event</div>
+            <div class="script-header-row">
+                <span class="lua-label">LUA CODE:</span>
+                <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+            </div>
+            <div class="code-box">loadstring(game:HttpGet("https://raw.githubusercontent.com/native-cam/RaitoHub/main/Script"))()</div>
+        </div>
+    </div>
+
+    <script>
+        // Tải danh sách script từ LocalStorage khi mở trang
+        window.onload = function() {
+            loadScriptsFromStorage();
+        }
+
+        // Hàm thêm script mới do người dùng nhập
+        function addNewScript() {
+            const name = document.getElementById('scriptName').value.trim();
+            const code = document.getElementById('scriptCode').value.trim();
+
+            if (!name || !code) {
+                alert("Vui lòng nhập đầy đủ tên và mã script!");
+                return;
+            }
+
+            const newScript = { name: name, code: code };
+            
+            // Lưu vào localStorage
+            let scripts = JSON.parse(localStorage.getItem('user_scripts')) || [];
+            scripts.unshift(newScript); // Đưa lên đầu danh sách
+            localStorage.setItem('user_scripts', JSON.stringify(scripts));
+
+            // Reset form và hiển thị lại
+            document.getElementById('scriptName').value = '';
+            document.getElementById('scriptCode').value = '';
+            loadScriptsFromStorage();
+            alert("Đã đăng script thành công!");
+        }
+
+        // Hàm tải và render script từ bộ nhớ trình duyệt
+        function loadScriptsFromStorage() {
+            const scriptListContainer = document.getElementById('scriptList');
+            
+            // Giữ lại 2 script mẫu ban đầu, sau đó cộng thêm script người dùng đăng
+            let defaultHTML = `
+                <div class="script-card">
+                    <div class="script-title">❄️ Speed Hub X Blox Fruit – Keyless, ESP, Speed Hack</div>
+                    <div class="script-header-row">
+                        <span class="lua-label">LUA CODE:</span>
+                        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-box">loadstring(game:HttpGet("https://raw.githubusercontent.com/ahmadhalabi2/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()</div>
+                </div>
+                <div class="script-card">
+                    <div class="script-title">❄️ Raito Hub Blox Fruit - Auto Chest, Sea Event</div>
+                    <div class="script-header-row">
+                        <span class="lua-label">LUA CODE:</span>
+                        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <div class="code-box">loadstring(game:HttpGet("https://raw.githubusercontent.com/native-cam/RaitoHub/main/Script"))()</div>
+                </div>
+            `;
+
+            let scripts = JSON.parse(localStorage.getItem('user_scripts')) || [];
+            
+            scripts.forEach(item => {
+                defaultHTML += `
+                    <div class="script-card">
+                        <div class="script-title">✨ ${escapeHtml(item.name)}</div>
+                        <div class="script-header-row">
+                            <span class="lua-label">LUA CODE:</span>
+                            <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <div class="code-box">${escapeHtml(item.code)}</div>
+                    </div>
+                `;
+            });
+
+            scriptListContainer.innerHTML = defaultHTML;
+        }
+
+        // Hàm copy nội dung code trong khung khi bấm nút
+        function copyCode(button) {
+            const codeBox = button.parentElement.nextElementSibling;
+            const textToCopy = codeBox.innerText;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = button.innerText;
+                button.innerText = "Copied!";
+                button.style.backgroundColor = "#28a745";
+                
+                setTimeout(() => {
+                    button.innerText = originalText;
+                    button.style.backgroundColor = "#007bff";
+                }, 1500);
+            }).catch(err => {
+                alert("Không thể sao chép tự động!");
+            });
+        }
+
+        // Bảo mật chống lỗi hiển thị HTML ký tự đặc biệt
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
