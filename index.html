@@ -18,7 +18,7 @@
             padding: 20px;
         }
 
-        /* Hiệu ứng chữ 7 màu chạy (Rainbow Gradient) */
+        /* Hiệu ứng chữ 7 màu chạy */
         @keyframes rainbow {
             0% { color: #ff0000; }
             14% { color: #ff7f00; }
@@ -43,7 +43,8 @@
 
         header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            position: relative;
         }
 
         header h1 {
@@ -57,6 +58,25 @@
         header p {
             color: #8f9bb3;
             font-size: 14px;
+        }
+
+        /* Nút đăng nhập Admin nhỏ gọn góc trên */
+        .admin-login-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #2d3748;
+            color: #a0aec0;
+            border: none;
+            padding: 5px 10px;
+            font-size: 11px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .admin-login-btn.active {
+            background: #28a745;
+            color: white;
         }
 
         /* Form đóng góp script */
@@ -111,7 +131,7 @@
             background: #0056b3;
         }
 
-        /* Khung chứa các thẻ Script (Card giống ảnh) */
+        /* Thẻ Script Card */
         .script-card {
             background: #181b28;
             border-radius: 12px;
@@ -119,15 +139,7 @@
             margin-bottom: 15px;
             border: 1px solid #2d3748;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-
-        .script-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            position: relative;
         }
 
         .script-header-row {
@@ -144,20 +156,33 @@
             letter-spacing: 0.5px;
         }
 
+        .btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
         .btn-copy {
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 6px 16px;
+            padding: 6px 14px;
             border-radius: 6px;
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
-        .btn-copy:active {
-            background-color: #28a745;
+        /* Nút Xóa dành riêng cho Admin */
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none; /* Mặc định ẩn, chỉ hiện khi bật Admin */
         }
 
         .code-box {
@@ -179,11 +204,12 @@
 <body>
 
     <header>
+        <button id="adminBtn" class="admin-login-btn" onclick="toggleAdmin()">Admin Mode</button>
         <h1>Blox Fruit Script Hub</h1>
         <p>Kho lưu trữ script miễn phí - Cộng đồng tự do chia sẻ</p>
     </header>
 
-    <!-- Form cho mọi người đóng góp script -->
+    <!-- Form đóng góp script -->
     <div class="form-container">
         <h3>+ Đóng Góp Script Mới</h3>
         <div class="form-group" style="margin-top: 10px;">
@@ -195,36 +221,47 @@
         <button class="btn-submit" onclick="addNewScript()">Đăng Script Ngay</button>
     </div>
 
-    <!-- Danh sách hiển thị các script -->
-    <div id="scriptList">
-        <!-- Script mẫu số 1 -->
-        <div class="script-card">
-            <div class="script-title">❄️ Speed Hub X Blox Fruit – Keyless, ESP, Speed Hack</div>
-            <div class="script-header-row">
-                <span class="lua-label">LUA CODE:</span>
-                <button class="btn-copy" onclick="copyCode(this)">Copy</button>
-            </div>
-            <div class="code-box">loadstring(game:HttpGet("https://raw.githubusercontent.com/ahmadhalabi2/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()</div>
-        </div>
-
-        <!-- Script mẫu số 2 -->
-        <div class="script-card">
-            <div class="script-title">❄️ Raito Hub Blox Fruit - Auto Chest, Sea Event</div>
-            <div class="script-header-row">
-                <span class="lua-label">LUA CODE:</span>
-                <button class="btn-copy" onclick="copyCode(this)">Copy</button>
-            </div>
-            <div class="code-box">loadstring(game:HttpGet("https://raw.githubusercontent.com/native-cam/RaitoHub/main/Script"))()</div>
-        </div>
-    </div>
+    <!-- Danh sách hiển thị script -->
+    <div id="scriptList"></div>
 
     <script>
-        // Tải danh sách script từ LocalStorage khi mở trang
+        // Mật khẩu Admin mặc định (Bạn có thể đổi chữ 'admin123' thành mật khẩu bạn muốn)
+        const ADMIN_PASSWORD = "admin123";
+        let isAdmin = false;
+
+        // Dữ liệu mẫu ban đầu (Được gán ID để quản lý xóa)
+        let defaultScripts = [
+            { id: 'def_1', name: "❄️ Speed Hub X Blox Fruit – Keyless, ESP, Speed Hack", code: 'loadstring(game:HttpGet("https://raw.githubusercontent.com/ahmadhalabi2/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()' },
+            { id: 'def_2', name: "❄️ Raito Hub Blox Fruit - Auto Chest, Sea Event", code: 'loadstring(game:HttpGet("https://raw.githubusercontent.com/native-cam/RaitoHub/main/Script"))()' }
+        ];
+
         window.onload = function() {
-            loadScriptsFromStorage();
+            renderScripts();
         }
 
-        // Hàm thêm script mới do người dùng nhập
+        // Bật/Tắt chế độ Admin bằng mật khẩu
+        function toggleAdmin() {
+            if (!isAdmin) {
+                let pass = prompt("Nhập mật khẩu Admin:");
+                if (pass === ADMIN_PASSWORD) {
+                    isAdmin = true;
+                    document.getElementById('adminBtn').innerText = "Admin: ON";
+                    document.getElementById('adminBtn').classList.add('active');
+                    alert("Đã bật quyền Admin thành công! Nút xóa đã hiển thị.");
+                    renderScripts();
+                } else if (pass !== null) {
+                    alert("Sai mật khẩu!");
+                }
+            } else {
+                isAdmin = false;
+                document.getElementById('adminBtn').innerText = "Admin Mode";
+                document.getElementById('adminBtn').classList.remove('active');
+                alert("Đã tắt quyền Admin.");
+                renderScripts();
+            }
+        }
+
+        // Hàm thêm script mới
         function addNewScript() {
             const name = document.getElementById('scriptName').value.trim();
             const code = document.getElementById('scriptCode').value.trim();
@@ -234,65 +271,79 @@
                 return;
             }
 
-            const newScript = { name: name, code: code };
+            const newScript = { 
+                id: 'user_' + Date.now(), 
+                name: name, 
+                code: code 
+            };
             
-            // Lưu vào localStorage
-            let scripts = JSON.parse(localStorage.getItem('user_scripts')) || [];
-            scripts.unshift(newScript); // Đưa lên đầu danh sách
-            localStorage.setItem('user_scripts', JSON.stringify(scripts));
+            let userScripts = JSON.parse(localStorage.getItem('custom_scripts')) || [];
+            userScripts.unshift(newScript);
+            localStorage.setItem('custom_scripts', JSON.stringify(userScripts));
 
-            // Reset form và hiển thị lại
             document.getElementById('scriptName').value = '';
             document.getElementById('scriptCode').value = '';
-            loadScriptsFromStorage();
+            renderScripts();
             alert("Đã đăng script thành công!");
         }
 
-        // Hàm tải và render script từ bộ nhớ trình duyệt
-        function loadScriptsFromStorage() {
-            const scriptListContainer = document.getElementById('scriptList');
-            
-            // Giữ lại 2 script mẫu ban đầu, sau đó cộng thêm script người dùng đăng
-            let defaultHTML = `
-                <div class="script-card">
-                    <div class="script-title">❄️ Speed Hub X Blox Fruit – Keyless, ESP, Speed Hack</div>
-                    <div class="script-header-row">
-                        <span class="lua-label">LUA CODE:</span>
-                        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-box">loadstring(game:HttpGet("https://raw.githubusercontent.com/ahmadhalabi2/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()</div>
-                </div>
-                <div class="script-card">
-                    <div class="script-title">❄️ Raito Hub Blox Fruit - Auto Chest, Sea Event</div>
-                    <div class="script-header-row">
-                        <span class="lua-label">LUA CODE:</span>
-                        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
-                    </div>
-                    <div class="code-box">loadstring(game:HttpGet("https://raw.githubusercontent.com/native-cam/RaitoHub/main/Script"))()</div>
-                </div>
-            `;
+        // Hàm xóa script theo ID
+        function deleteScript(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa script này không?")) return;
 
-            let scripts = JSON.parse(localStorage.getItem('user_scripts')) || [];
+            // Kiểm tra xem có phải script mặc định không
+            let defIndex = defaultScripts.findIndex(item => item.id === id);
+            if (defIndex !== -1) {
+                defaultScripts.splice(defIndex, 1);
+            } else {
+                // Xóa trong LocalStorage của script người dùng
+                let userScripts = JSON.parse(localStorage.getItem('custom_scripts')) || [];
+                userScripts = userScripts.filter(item => item.id !== id);
+                localStorage.setItem('custom_scripts', JSON.stringify(userScripts));
+            }
+
+            renderScripts();
+        }
+
+        // Hiển thị toàn bộ danh sách ra giao diện
+        function renderScripts() {
+            const container = document.getElementById('scriptList');
+            let userScripts = JSON.parse(localStorage.getItem('custom_scripts')) || [];
             
-            scripts.forEach(item => {
-                defaultHTML += `
+            // Kết hợp script mặc định và script người dùng đóng góp
+            let allScripts = [...defaultScripts, ...userScripts];
+
+            if (allScripts.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #718096;">Chưa có script nào trên hệ thống.</p>';
+                return;
+            }
+
+            let html = '';
+            allScripts.forEach(item => {
+                let deleteBtnStyle = isAdmin ? 'display: inline-block;' : 'display: none;';
+                html += `
                     <div class="script-card">
-                        <div class="script-title">✨ ${escapeHtml(item.name)}</div>
+                        <div class="script-header-row">
+                            <span class="script-title" style="font-size: 15px; font-weight: bold;">✨ ${escapeHtml(item.name)}</span>
+                        </div>
                         <div class="script-header-row">
                             <span class="lua-label">LUA CODE:</span>
-                            <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+                            <div class="btn-group">
+                                <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+                                <button class="btn-delete" style="${deleteBtnStyle}" onclick="deleteScript('${item.id}')">Xóa</button>
+                            </div>
                         </div>
                         <div class="code-box">${escapeHtml(item.code)}</div>
                     </div>
                 `;
             });
 
-            scriptListContainer.innerHTML = defaultHTML;
+            container.innerHTML = html;
         }
 
-        // Hàm copy nội dung code trong khung khi bấm nút
+        // Hàm sao chép code
         function copyCode(button) {
-            const codeBox = button.parentElement.nextElementSibling;
+            const codeBox = button.parentElement.parentElement.nextElementSibling;
             const textToCopy = codeBox.innerText;
 
             navigator.clipboard.writeText(textToCopy).then(() => {
@@ -305,11 +356,11 @@
                     button.style.backgroundColor = "#007bff";
                 }, 1500);
             }).catch(err => {
-                alert("Không thể sao chép tự động!");
+                alert("Không thể sao chép!");
             });
         }
 
-        // Bảo mật chống lỗi hiển thị HTML ký tự đặc biệt
+        // Chống lỗi ký tự đặc biệt HTML
         function escapeHtml(text) {
             return text
                 .replace(/&/g, "&amp;")
